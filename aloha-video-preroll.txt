@@ -1,19 +1,23 @@
 [Adblock Plus 2.0]
 ! Title: Aloha Video Preroll Experiments - Topgirl and DDALTUBE
-! Description: Experimental site-specific filters for inline pre-roll ads. No shared media CDN blocking.
+! Description: Experimental site-specific filter rules to bypass pre-roll ads without blocking legitimate video media.
 ! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
-! Version: 2026.11.03.3
+! Version: 2026.11.03.4
 ! Last modified: 2026-11-03
 ! Expires: 1 day
 !
-! IMPORTANT: Some Aloha iOS versions may ignore custom JavaScript rules or scriptlets.
-! Playback-safe design: never block cdn.ddal.pw or m129.b-cdn.net media URLs.
+! IMPORTANT: Scriptlet execution in third-party Aloha iOS subscription lists has NOT been verified.
+! Trusted scriptlets may be rejected by filter engines that do not mark subscriptions as trusted.
+! The filter intentionally does NOT block either video CDN or ad MP4 URLs.
 !
-! DDALTUBE - verified successful on user's Aloha: keep unchanged.
+! DDALTUBE: Verified working by the user. Do not alter.
 ddaltube.com#%#//scriptlet('remove-attr', 'data-a', '#dtube-player', 'asap stay')
 !
-! TOPGIRL - Video.js Player constructor is videojs.getComponent('Player').
-! The previous rule incorrectly targeted nonexistent videojs.Player.prototype.vroll.
-! This JavaScript filter neutralizes the already-registered vroll method at DOM readiness.
-! Requires JavaScript filtering rules in the subscription to be executed (Aloha support unverified).
-topgirl.co#%#(function(){'use strict';var timer=null,done=false;function blockVroll(){if(done)return;try{var v=window.videojs;var P=v&&typeof v.getComponent==='function'&&v.getComponent('Player');if(!P||!P.prototype||typeof P.prototype.vroll!=='function')return;P.prototype.vroll=function(){return this;};done=true;if(timer!==null)clearInterval(timer);}catch(e){}}blockVroll();document.addEventListener('DOMContentLoaded',blockVroll,true);if(!done)timer=setInterval(blockVroll,20);setTimeout(function(){if(timer!==null)clearInterval(timer);},10000);})();
+! TOPGIRL: Observed site uses player.vroll({...}) inline to initialize a pre-roll.
+! Replace ONLY the player.vroll( token with a no-op function invocation,
+! leaving player.nuevo(), player.hotkeys(), and the original media source intact.
+! Requires trusted-replace-node-text support in the filter engine.
+topgirl.co#%#//scriptlet('trusted-replace-node-text', 'script', 'player.vroll(', 'player.vroll(', '(function(){})(')
+!
+! This prevents initializing the ad if the replacement occurs BEFORE inline script execution.
+! Unlike MP4 network blocking, this rule does not intentionally trigger a media load error.
