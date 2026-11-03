@@ -1,19 +1,19 @@
 [Adblock Plus 2.0]
 ! Title: Aloha Video Preroll Experiments - Topgirl and DDALTUBE
-! Description: Experimental site-specific scriptlet rules to prevent pre-roll ads without blocking legitimate video media.
+! Description: Experimental site-specific filters for inline pre-roll ads. No shared media CDN blocking.
 ! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
-! Version: 2026.11.03.2
+! Version: 2026.11.03.3
 ! Last modified: 2026-11-03
 ! Expires: 1 day
 !
-! IMPORTANT: These are Scriptlet rules, NOT normal URL-blocking rules.
-! Aloha iOS support for third-party subscription scriptlets is unverified.
-! Do NOT block cdn.ddal.pw or m129.b-cdn.net entirely: they also serve the main videos.
+! IMPORTANT: Some Aloha iOS versions may ignore custom JavaScript rules or scriptlets.
+! Playback-safe design: never block cdn.ddal.pw or m129.b-cdn.net media URLs.
 !
-! DDALTUBE: data-a is the embedded pre-roll ad list; data-v is the primary video.
+! DDALTUBE - verified successful on user's Aloha: keep unchanged.
 ddaltube.com#%#//scriptlet('remove-attr', 'data-a', '#dtube-player', 'asap stay')
 !
-! TOPGIRL: Video.js vroll(...) begins pre-roll ads. Try to replace the method.
-topgirl.co#%#//scriptlet('set-constant', 'videojs.Player.prototype.vroll', 'noopFunc')
-!
-! Intentionally no MP4-blocking rules: media URL blocking previously caused playback errors.
+! TOPGIRL - Video.js Player constructor is videojs.getComponent('Player').
+! The previous rule incorrectly targeted nonexistent videojs.Player.prototype.vroll.
+! This JavaScript filter neutralizes the already-registered vroll method at DOM readiness.
+! Requires JavaScript filtering rules in the subscription to be executed (Aloha support unverified).
+topgirl.co#%#(function(){'use strict';var timer=null,done=false;function blockVroll(){if(done)return;try{var v=window.videojs;var P=v&&typeof v.getComponent==='function'&&v.getComponent('Player');if(!P||!P.prototype||typeof P.prototype.vroll!=='function')return;P.prototype.vroll=function(){return this;};done=true;if(timer!==null)clearInterval(timer);}catch(e){}}blockVroll();document.addEventListener('DOMContentLoaded',blockVroll,true);if(!done)timer=setInterval(blockVroll,20);setTimeout(function(){if(timer!==null)clearInterval(timer);},10000);})();
