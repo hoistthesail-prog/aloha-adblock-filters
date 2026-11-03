@@ -1,0 +1,19 @@
+[Adblock Plus 2.0]
+! Title: Aloha Video Preroll Experiments - Topgirl and DDALTUBE
+! Description: Experimental site-specific scriptlet rules to prevent pre-roll ads without blocking legitimate video media.
+! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
+! Version: 2026.11.03.2
+! Last modified: 2026-11-03
+! Expires: 1 day
+!
+! IMPORTANT: These are Scriptlet rules, NOT normal URL-blocking rules.
+! Aloha iOS support for third-party subscription scriptlets is unverified.
+! Do NOT block cdn.ddal.pw or m129.b-cdn.net entirely: they also serve the main videos.
+!
+! DDALTUBE: data-a is the embedded pre-roll ad list; data-v is the primary video.
+ddaltube.com#%#//scriptlet('remove-attr', 'data-a', '#dtube-player', 'asap stay')
+!
+! TOPGIRL: Video.js vroll(...) begins pre-roll ads. Try to replace the method.
+topgirl.co#%#//scriptlet('set-constant', 'videojs.Player.prototype.vroll', 'noopFunc')
+!
+! Intentionally no MP4-blocking rules: media URL blocking previously caused playback errors.
