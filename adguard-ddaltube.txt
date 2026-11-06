@@ -1,0 +1,19 @@
+[Adblock Plus 2.0]
+! Title: DDALTUBE — AdGuard pre-roll video + overlay blocker
+! Description: Targets only DDALTUBE pre-roll MP4 media in /.ddal/ and the in-player companion banner. Does not block main HLS video streams.
+! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
+! Version: 2026.11.06.1
+! Last modified: 2026-11-06
+! Expires: 1 day
+!
+! Updated Next.js player (2026-11-06) has a separate ad VIDEO element with a source from cdn.ddal.pw/.ddal/*.mp4.
+! The player uses onError to advance past failed pre-roll loading.
+! Main video remains at cdn.ddal.pw/<different-path>/hls/playlist.m3u8.
+!
+! Block only pre-roll MP4 loads on DDALTUBE pages:
+||cdn.ddal.pw/.ddal/*.mp4$domain=ddaltube.com
+!
+! Hide in-player companion banner without hiding the main video:
+ddaltube.com##.VYFDea_banner
+!
+! Do not block ||cdn.ddal.pw^ or the player's Next.js JavaScript bundles.
