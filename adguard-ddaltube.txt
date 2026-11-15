@@ -1,19 +1,24 @@
 [Adblock Plus 2.0]
-! Title: DDALTUBE — AdGuard pre-roll video + overlay blocker
-! Description: Targets only DDALTUBE pre-roll MP4 media in /.ddal/ and the in-player companion banner. Does not block main HLS video streams.
+! Title: DDALTUBE — AdGuard video ad and in-player banner blocker
+! Description: Block only DDALTUBE pre-roll ads from the dedicated /.ddal/ MP4 path. Preserve main HLS video sources.
 ! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
-! Version: 2026.11.06.1
-! Last modified: 2026-11-06
+! Version: 2026.11.15.1
+! Last modified: 2026-11-15
 ! Expires: 1 day
 !
-! Updated Next.js player (2026-11-06) has a separate ad VIDEO element with a source from cdn.ddal.pw/.ddal/*.mp4.
-! The player uses onError to advance past failed pre-roll loading.
-! Main video remains at cdn.ddal.pw/<different-path>/hls/playlist.m3u8.
+! Verified page structure 2026-11-15 on kr31.ddaltube.com/video/4003424:
+! Ad: https://cdn.ddal.pw/.ddal/6e81216bd4372ff6249cf4c9c9a4c1bb.mp4
+! Main: https://cdn.ddal.pw/y20139139885687c/hls/playlist.m3u8
+! The separate ad-video tag and normal HLS tag are within VYFDea_box.
 !
-! Block only pre-roll MP4 loads on DDALTUBE pages:
-||cdn.ddal.pw/.ddal/*.mp4$domain=ddaltube.com
+! Old $domain=ddaltube.com rule had limited scope; this path-only rule also matches
+! when the media request's referrer/domain classification differs.
+! No blocking of the cdn.ddal.pw hostname, HLS content or site JS.
+||cdn.ddal.pw/.ddal/*.mp4$important
 !
-! Hide in-player companion banner without hiding the main video:
+! Remove the advertising banner overlay without hiding the normal video player.
 ddaltube.com##.VYFDea_banner
 !
-! Do not block ||cdn.ddal.pw^ or the player's Next.js JavaScript bundles.
+! AdGuard for iOS: Requires Safari protection and enabled Safari extensions.
+! DNS-only filtering and third-party iOS browsers cannot perform URL-path-based blocking with AdGuard Safari user rules.
+! If pre-roll still plays after refreshing and updating, confirm the browser is Safari and Safari protection is active.
