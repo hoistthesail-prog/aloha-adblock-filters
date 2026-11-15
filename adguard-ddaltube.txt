@@ -1,29 +1,27 @@
 [Adblock Plus 2.0]
-! Title: DDALTUBE — AdGuard video ad and in-player banner blocker
-! Description: Block only DDALTUBE pre-roll ads from the dedicated /.ddal/ MP4 path. Preserve main HLS video sources.
+! Title: DDALTUBE — AdGuard network preroll blocker + experimental auto-skip
+! Description: Block preroll MP4 requests and use React's own ad onEnded callback to skip still-active ads.
 ! Homepage: https://github.com/hoistthesail-prog/aloha-adblock-filters
-! Version: 2026.11.15.2
+! Version: 2026.11.15.3
 ! Last modified: 2026-11-15
 ! Expires: 1 day
 !
-! Verified page structure 2026-11-15 on kr31.ddaltube.com/video/4003424:
-! Ad: https://cdn.ddal.pw/.ddal/6e81216bd4372ff6249cf4c9c9a4c1bb.mp4
-! Main: https://cdn.ddal.pw/y20139139885687c/hls/playlist.m3u8
-! The separate ad-video tag and normal HLS tag are within VYFDea_box.
-! 2026-11-15 /video/4003421: Separate VIP membership CTA is NOT a video ad.
+! Confirmed 2026-11-15 on kr31.ddaltube.com/video/4003421:
+! Separate ad video from cdn.ddal.pw/.ddal/<hash>.mp4;
+! main video from a separate HLS .../hls/playlist.m3u8.
+! Skip button class: VYFDea_skip; the ad video's React onEnded triggers onEnd.
 !
-! Old $domain=ddaltube.com rule had limited scope; this path-only rule also matches
-! when the media request's referrer/domain classification differs.
-! No blocking of the cdn.ddal.pw hostname, HLS content or site JS.
+! Block dedicated ad media only, without blocking the shared CDN or main HLS.
 ||cdn.ddal.pw/.ddal/*.mp4$important
 !
-! Remove the advertising banner overlay without hiding the normal video player.
+! Hide in-player companion ad banner (not the skip button).
 ddaltube.com##.VYFDea_banner
-
-! Hide the separate VIP "no ads" membership button below video (cosmetic only).
-! Does NOT affect the pre-roll player state or subscription status.
-ddaltube.com##a[href*="/member/login?return=/vip_apply"]
 !
-! AdGuard for iOS: Requires Safari protection and enabled Safari extensions.
-! DNS-only filtering and third-party iOS browsers cannot perform URL-path-based blocking with AdGuard Safari user rules.
-! If pre-roll still plays after refreshing and updating, confirm the browser is Safari and Safari protection is active.
+! EXPERIMENTAL: If network blocking does not end the pre-roll, the JavaScript
+! rule below dispatches the ad video's "ended" event while the skip button is shown.
+! Requires AdGuard iOS Safari Advanced Protection and TRUSTED user rules;
+! external custom subscription lists may not run this JavaScript rule.
+ddaltube.com#%#(function(){'use strict';var attempts=new WeakMap();function skipAd(){document.querySelectorAll('.VYFDea_box').forEach(function(box){if(!box.querySelector('.VYFDea_skip'))return;box.querySelectorAll('video[src*="/.ddal/"]').forEach(function(video){var source=video.getAttribute('src')||'';if(!/\.mp4(?:[?#]|$)/i.test(source))return;var now=Date.now();if(now-(attempts.get(video)||0)<1000)return;attempts.set(video,now);video.dispatchEvent(new Event('ended'));});});}var observer=new MutationObserver(skipAd);function init(){if(document.documentElement)observer.observe(document.documentElement,{childList:true,subtree:true});skipAd();}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();setInterval(skipAd,500);})();
+!
+! No hiding of the "Skip ad" button: it is used to detect active preroll.
+! No hiding of the separate VIP subscription CTA: it is unrelated to preroll.
